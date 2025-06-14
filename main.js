@@ -133,16 +133,29 @@ $(document).ready(function() {
 
         Promise.all(promises).then(results => {
             let allBooks = [];
+            let inputBooks = [];
             
+            // 入力された本の情報を収集
             results.forEach(result => {
-                if (result.items) {
+                if (result.items && result.items.length > 0) {
+                    const inputBook = result.items[0];
+                    inputBooks.push(inputBook);
                     allBooks = allBooks.concat(result.items);
                 }
             });
 
-            // Remove duplicates and filter
-            const uniqueBooks = removeDuplicates(allBooks);
-            totalResults = uniqueBooks.slice(0, 50); // Limit to 50 results
+            // 入力された本の特徴を分析
+            const bookFeatures = analyzeBookFeatures(inputBooks);
+            
+            // 検索結果を分析してスコア付け
+            const scoredBooks = scoreBooks(allBooks, bookFeatures);
+            
+            // スコアの高い順にソート
+            scoredBooks.sort((a, b) => b.score - a.score);
+
+            // 重複を除去し、スコアの高い本を優先
+            const uniqueBooks = removeDuplicates(scoredBooks.map(book => book.book));
+            totalResults = uniqueBooks.slice(0, 50); // 上位50件を表示
             filteredResults = totalResults;
             currentPage = 1;
 
@@ -156,19 +169,142 @@ $(document).ready(function() {
         });
     }
 
+    // 本の特徴を分析する関数
+    function analyzeBookFeatures(books) {
+        const features = {
+            authors: new Set(),
+            categories: new Set(),
+            keywords: new Set(),
+            publishers: new Set(),
+            publishedYears: new Set()
+        };
+
+        books.forEach(book => {
+            const info = book.volumeInfo;
+            
+            // 著者情報
+            if (info.authors) {
+                info.authors.forEach(author => features.authors.add(author));
+            }
+            
+            // カテゴリー情報
+            if (info.categories) {
+                info.categories.forEach(category => features.categories.add(category));
+            }
+            
+            // 出版社情報
+            if (info.publisher) {
+                features.publishers.add(info.publisher);
+            }
+            
+            // 出版年
+            if (info.publishedDate) {
+                const year = info.publishedDate.split('-')[0];
+                features.publishedYears.add(year);
+            }
+            
+            // タイトルと説明からキーワードを抽出
+            const text = `${info.title} ${info.description || ''}`;
+            const words = text.toLowerCase().split(/\s+/);
+            words.forEach(word => {
+                if (word.length > 2) { // 2文字以上の単語のみ
+                    features.keywords.add(word);
+                }
+            });
+        });
+
+        return features;
+    }
+
+    // 本にスコアを付ける関数
+    function scoreBooks(books, features) {
+        return books.map(book => {
+            let score = 0;
+            const info = book.volumeInfo;
+            
+            // 著者の一致
+            if (info.authors) {
+                info.authors.forEach(author => {
+                    if (features.authors.has(author)) {
+                        score += 3;
+                    }
+                });
+            }
+            
+            // カテゴリーの一致
+            if (info.categories) {
+                info.categories.forEach(category => {
+                    if (features.categories.has(category)) {
+                        score += 2;
+                    }
+                });
+            }
+            
+            // 出版社の一致
+            if (info.publisher && features.publishers.has(info.publisher)) {
+                score += 1;
+            }
+            
+            // 出版年の近さ
+            if (info.publishedDate) {
+                const year = info.publishedDate.split('-')[0];
+                if (features.publishedYears.has(year)) {
+                    score += 1;
+                }
+            }
+            
+            // キーワードの一致
+            const text = `${info.title} ${info.description || ''}`.toLowerCase();
+            features.keywords.forEach(keyword => {
+                if (text.includes(keyword)) {
+                    score += 0.5;
+                }
+            });
+            
+            return { book, score };
+        });
+    }
+
     // Remove duplicates and similar books
     function removeDuplicates(books) {
         const seen = new Set();
         const uniqueBooks = [];
+        const seriesGroups = new Map();
 
         books.forEach(book => {
             const title = book.volumeInfo.title || '';
             const authors = book.volumeInfo.authors ? book.volumeInfo.authors.join('') : '';
-            const key = `${title}-${authors}`.toLowerCase().replace(/\s+/g, '');
             
+            // シリーズ本の判定
+            const seriesMatch = title.match(/(.*?)(?:\s*第[0-9]+巻|\s*\([0-9]+\)|\s*[0-9]+)$/);
+            if (seriesMatch) {
+                const baseTitle = seriesMatch[1].trim();
+                const seriesKey = `${baseTitle}-${authors}`.toLowerCase().replace(/\s+/g, '');
+                
+                if (!seriesGroups.has(seriesKey)) {
+                    seriesGroups.set(seriesKey, []);
+                }
+                seriesGroups.get(seriesKey).push(book);
+                return;
+            }
+
+            // 通常の重複チェック
+            const key = `${title}-${authors}`.toLowerCase().replace(/\s+/g, '');
             if (!seen.has(key)) {
                 seen.add(key);
                 uniqueBooks.push(book);
+            }
+        });
+
+        // シリーズ本の処理
+        seriesGroups.forEach((seriesBooks, seriesKey) => {
+            if (seriesBooks.length > 0) {
+                // シリーズの最初の本を代表として使用
+                const representativeBook = seriesBooks[0];
+                // タイトルを「シリーズ名（全X巻）」の形式に変更
+                const baseTitle = representativeBook.volumeInfo.title.replace(/\s*第[0-9]+巻|\s*\([0-9]+\)|\s*[0-9]+$/, '').trim();
+                representativeBook.volumeInfo.title = `${baseTitle}（全${seriesBooks.length}巻）`;
+                uniqueBooks.push(representativeBook);
             }
         });
 
