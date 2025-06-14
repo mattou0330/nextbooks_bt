@@ -1,4 +1,4 @@
-/* Custom styles for the book recommendation app */
+/* 本の推薦アプリのカスタムスタイル */
 
 .autocomplete-suggestions {
     position: absolute;
@@ -44,7 +44,7 @@
     z-index: 10;
 }
 
-/* Book cover styling - improved aspect ratio */
+/* 本の表紙のスタイル - アスペクト比を改善 */
 .book-cover {
     max-width: 120px;
     max-height: 180px;
@@ -59,7 +59,7 @@
     transform: scale(1.05);
 }
 
-/* Mobile responsiveness */
+/* モバイル対応のスタイル */
 @media (max-width: 768px) {
     .display-4 {
         font-size: 2rem;
@@ -80,7 +80,7 @@
     }
 }
 
-/* Ensure proper card layout */
+/* カードのレイアウトを適切に設定 */
 .card {
     min-height: 400px;
 }
@@ -89,13 +89,13 @@
     padding: 1.25rem;
 }
 
-/* Loading animation */
+/* ローディングアニメーション */
 .spinner-border {
     width: 3rem;
     height: 3rem;
 }
 
-/* Pagination styling */
+/* ページネーションのスタイル */
 .pagination {
     margin-bottom: 2rem;
 }
@@ -109,7 +109,7 @@
     border-color: #0d6efd;
 }
 
-/* Favorites section styling */
+/* お気に入りセクションのスタイル */
 #favorites-section {
     background-color: #f8f9fa;
     padding: 2rem 0;
@@ -117,12 +117,12 @@
     border-radius: 0.5rem;
 }
 
-/* Header styling */
+/* ヘッダーのスタイル */
 .text-primary {
     color: #0d6efd !important;
 }
 
-/* Button hover effects */
+/* ボタンのホバーエフェクト */
 .btn-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -133,7 +133,7 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Card title and author styling */
+/* カードのタイトルと著者名のスタイル */
 .card-title {
     line-height: 1.3;
     margin-bottom: 0.5rem;
@@ -144,13 +144,13 @@
     line-height: 1.4;
 }
 
-/* Improved spacing for book information */
+/* 本の情報の間隔を改善 */
 .card-body > div:first-child {
     border-bottom: 1px solid #f0f0f0;
     padding-bottom: 0.75rem;
 }
 
-/* Action buttons styling */
+/* アクションボタンのスタイル */
 .d-grid.gap-2 {
     gap: 0.5rem !important;
 }
