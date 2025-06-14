@@ -341,12 +341,19 @@ $(document).ready(function() {
         const amazonSearchLink = `https://www.amazon.co.jp/s?k=${encodeURIComponent(title + ' ' + authors)}`;
         
         const isFavorite = favorites.some(fav => fav.id === book.id);
-        const favoriteButtonClass = isFavorite ? 'btn-success' : 'btn-outline-success';
-        const favoriteButtonText = isFavorite ? 'お気に入り済み' : 'お気に入りに追加';
+        const favoriteButtonClass = isFavorite ? 'text-danger' : 'text-muted';
+        const favoriteButtonIcon = isFavorite ? 'fas' : 'far';
 
         return $(`
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm position-relative">
+                    <!-- お気に入りボタン -->
+                    <button class="btn btn-link position-absolute top-0 end-0 p-2 add-favorite" 
+                            data-book-id="${book.id}" 
+                            style="z-index: 2; text-decoration: none;">
+                        <i class="${favoriteButtonIcon} fa-heart ${favoriteButtonClass} fa-lg"></i>
+                    </button>
+                    
                     <div class="card-body d-flex flex-column">
                         <!-- Title and Author at the top -->
                         <div class="mb-3">
@@ -371,9 +378,6 @@ $(document).ready(function() {
                                 <a href="${amazonSearchLink}" target="_blank" class="btn btn-warning btn-sm">
                                     <i class="fab fa-amazon me-1"></i>Amazonで探す
                                 </a>
-                                <button class="btn ${favoriteButtonClass} btn-sm add-favorite" data-book-id="${book.id}">
-                                    <i class="fas fa-heart me-1"></i>${favoriteButtonText}
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -390,15 +394,14 @@ $(document).ready(function() {
         if (!book) return;
 
         const existingIndex = favorites.findIndex(fav => fav.id === bookId);
+        const heartIcon = $(this).find('i');
         
         if (existingIndex === -1) {
             favorites.push(book);
-            $(this).removeClass('btn-outline-success').addClass('btn-success')
-                   .html('<i class="fas fa-heart me-1"></i>お気に入り済み');
+            heartIcon.removeClass('far text-muted').addClass('fas text-danger');
         } else {
             favorites.splice(existingIndex, 1);
-            $(this).removeClass('btn-success').addClass('btn-outline-success')
-                   .html('<i class="fas fa-heart me-1"></i>お気に入りに追加');
+            heartIcon.removeClass('fas text-danger').addClass('far text-muted');
         }
 
         localStorage.setItem('bookFavorites', JSON.stringify(favorites));

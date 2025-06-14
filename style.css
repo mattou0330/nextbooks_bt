@@ -24,11 +24,12 @@
 }
 
 .card {
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
 }
 
 .btn {
@@ -152,4 +153,21 @@
 /* Action buttons styling */
 .d-grid.gap-2 {
     gap: 0.5rem !important;
+}
+
+/* お気に入りボタンのスタイル */
+.add-favorite {
+    transition: transform 0.2s ease-in-out;
+}
+
+.add-favorite:hover {
+    transform: scale(1.2);
+}
+
+.add-favorite i {
+    transition: all 0.2s ease-in-out;
+}
+
+.add-favorite:hover i.text-muted {
+    color: #dc3545 !important;
 }
